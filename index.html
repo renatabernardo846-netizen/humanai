@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HumanAI — Atendimento automatizado com inteligência artificial humanizada para redes sociais. Responda clientes no WhatsApp e Instagram como um ser humano, 24 horas por dia." />
+  <title>HumanAI — Atendimento Humanizado com IA para Redes Sociais</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── HERO ───────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary-light);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero-tag-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse-dot 2s infinite;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-desc {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 480px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .hero-stat-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* ── CHAT PREVIEW ───────────────────────────────── */
+    .chat-preview {
+      background: rgba(13,13,43,0.8);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 60px var(--primary-glow);
+      animation: floatCard 6s ease-in-out infinite;
+    }
+
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0px) rotate(-1deg); }
+      50%       { transform: translateY(-12px) rotate(0deg); }
+    }
+
+    .chat-header {
+      background: rgba(124,58,237,0.12);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .chat-header-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--grad-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .chat-header-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .chat-header-status {
+      font-size: 0.75rem;
+      color: var(--success-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      min-height: 320px;
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .msg-bubble {
+      padding: 0.625rem 0.875rem;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      max-width: 85%;
+    }
+
+    .msg.received .msg-bubble {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .msg.sent .msg-bubble {
+      background: var(--grad-primary);
+      border-bottom-right-radius: 4px;
+      align-self: flex-end;
+      color: #fff;
+    }
+
+    .msg-time {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .msg.received .msg-time { align-self: flex-start; margin-left: 4px; }
+    .msg.sent    .msg-time { align-self: flex-end;   margin-right: 4px; }
+
+    .chat-input-bar {
+      padding: 0.875rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: rgba(7,7,26,0.6);
+    }
+
+    .chat-input-fake {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--grad-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    /* ── COMO FUNCIONA ──────────────────────────────── */
+    .steps-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+
+    .steps-timeline::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 40px;
+      bottom: 40px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--primary), var(--accent));
+      opacity: 0.3;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      padding: 1.5rem 0;
+    }
+
+    .timeline-num {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+
+    .timeline-item:hover .timeline-num {
+      border-color: var(--primary);
+      background: rgba(124,58,237,0.15);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .timeline-content h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-content p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ── RECURSOS ───────────────────────────────────── */
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--grad-primary);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px var(--primary-glow);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-icon.purple { background: rgba(124,58,237,0.15); }
+    .feature-icon.cyan   { background: rgba(6,182,212,0.12); }
+    .feature-icon.green  { background: rgba(16,185,129,0.12); }
+    .feature-icon.orange { background: rgba(245,158,11,0.12); }
+    .feature-icon.pink   { background: rgba(236,72,153,0.12); }
+    .feature-icon.blue   { background: rgba(59,130,246,0.12); }
+
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.625rem;
+    }
+
+    .feature-card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── PLANOS ─────────────────────────────────────── */
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .pricing-card.popular {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(6,182,212,0.06));
+      box-shadow: 0 0 40px var(--primary-glow);
+      transform: scale(1.03);
+    }
+
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--grad-primary);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pricing-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .pricing-price {
+      font-size: 2.75rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .pricing-period {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-features {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .pricing-feature-item .check {
+      color: var(--success-light);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── DEPOIMENTOS ────────────────────────────────── */
+    .testimonial-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.75rem;
+      transition: all 0.3s;
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-4px);
+    }
+
+    .testimonial-stars {
+      color: var(--warning-light);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      letter-spacing: 2px;
+    }
+
+    .testimonial-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .testimonial-name {
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+
+    .testimonial-role {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ── CTA FINAL ──────────────────────────────────── */
+    .cta-section {
+      text-align: center;
+      padding: 6rem 0;
+      position: relative;
+    }
+
+    .cta-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(124,58,237,0.2), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── RODAPÉ ─────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: var(--primary-light); }
+
+    /* ── REDES SOCIAIS BADGE ────────────────────────── */
+    .social-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .social-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.875rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+
+    .social-badge.whatsapp {
+      background: rgba(37,211,102,0.1);
+      border-color: rgba(37,211,102,0.25);
+      color: #25d366;
+    }
+
+    .social-badge.instagram {
+      background: rgba(225,48,108,0.1);
+      border-color: rgba(225,48,108,0.25);
+      color: #e1306c;
+    }
+
+    .social-badge.facebook {
+      background: rgba(24,119,242,0.1);
+      border-color: rgba(24,119,242,0.25);
+      color: #1877f2;
+    }
+
+    /* ── SECTION HEADER ─────────────────────────────── */
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-subtitle {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary-light);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .chat-preview { display: none; }
+      .hero-stats { gap: 1.25rem; }
+      .pricing-card.popular { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Fundo animado -->
+<div class="bg-animated"></div>
+
+<!-- ═══════════════════════════════════════════════
+     NAVEGAÇÃO
+═══════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🤖</div>
+      <span>HumanAI</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#como-funciona">Como Funciona</a></li>
+      <li><a href="#recursos">Recursos</a></li>
+      <li><a href="#planos">Planos</a></li>
+      <li><a href="#depoimentos">Depoimentos</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn btn-ghost">Entrar</a>
+      <a href="onboarding.html" class="btn btn-primary">Começar Grátis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+
+      <!-- Texto -->
+      <div class="animate-fade-up">
+        <div class="hero-tag">
+          <span class="hero-tag-dot"></span>
+          Inteligência Artificial Humanizada
+        </div>
+
+        <h1 class="hero-title">
+          Sua empresa atende<br />
+          <span class="text-gradient">24h por dia</span><br />
+          como um humano
+        </h1>
+
+        <p class="hero-desc">
+          Configure uma IA que conversa com seus clientes no WhatsApp, Instagram e Facebook
+          com naturalidade, empatia e o tom da sua marca — nunca como um robô frio.
+        </p>
+
+        <div class="social-badges" style="margin-bottom: 1.5rem;">
+          <span class="social-badge whatsapp">📱 WhatsApp</span>
+          <span class="social-badge instagram">📸 Instagram</span>
+          <span class="social-badge facebook">💬 Facebook</span>
+        </div>
+
+        <div class="hero-actions">
+          <a href="onboarding.html" class="btn btn-primary btn-lg" id="btn-comecar-gratis">
+            🚀 Começar Gratuitamente
+          </a>
+          <a href="simulator.html" class="btn btn-secondary btn-lg" id="btn-ver-demo">
+            ▶️ Ver Demonstração
+          </a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-value text-gradient">98%</div>
+            <div class="hero-stat-label">Satisfação dos clientes</div>
+          </div>
+          <div>
+            <div class="hero-stat-value text-gradient">3s</div>
+            <div class="hero-stat-label">Tempo médio de resposta</div>
+          </div>
+          <div>
+            <div class="hero-stat-value text-gradient">24/7</div>
+            <div class="hero-stat-label">Atendimento sem parar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview do chat -->
+      <div class="animate-fade-up delay-3">
+        <div class="chat-preview">
+          <div class="chat-header">
+            <div class="chat-header-avatar">👩‍💼</div>
+            <div>
+              <div class="chat-header-name">Ana · Assistente da Beleza Real</div>
+              <div class="chat-header-status">
+                <span class="status-dot active"></span>
+                Online agora
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-body" id="hero-chat">
+            <div class="msg received" style="animation-delay:0.2s">
+              <div class="msg-bubble">
+                Oi! Tudo bem? Vi que vocês têm promoção de corte + escova. Ainda tem disponibilidade para sábado? 🙂
+              </div>
+              <div class="msg-time">14:02</div>
+            </div>
+
+            <div class="msg sent" style="animation-delay:0.8s">
+              <div class="msg-bubble">
+                Oi, Mariana! Tudo ótimo, obrigada por perguntar 😊 Sim, ainda temos horários no sábado! Você prefere de manhã ou à tarde?
+              </div>
+              <div class="msg-time">14:02</div>
+            </div>
+
+            <div class="msg received" style="animation-delay:1.4s">
+              <div class="msg-bubble">
+                De tarde seria perfeito! Por volta das 15h?
+              </div>
+              <div class="msg-time">14:03</div>
+            </div>
+
+            <div class="msg sent" style="animation-delay:2s">
+              <div class="msg-bubble">
+                Perfeito! 15h do sábado está confirmado para você 🎉 Vou te mandar a confirmação com o endereço. Nos vemos lá!
+              </div>
+              <div class="msg-time">14:03</div>
+            </div>
+
+            <div class="msg received" style="animation-delay:2.6s">
+              <div class="msg-bubble">
+                Amei! Muito atenciosa, obrigada 💜
+              </div>
+              <div class="msg-time">14:04</div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <div class="chat-input-fake">Digite uma mensagem...</div>
+            <div class="chat-send-btn">➤</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     COMO FUNCIONA
+═══════════════════════════════════════════════ -->
+<section class="section" id="como-funciona" style="background: rgba(13,13,43,0.5);">
+  <div class="container">
+    <div class="section-header animate-fade-up">
+      <span class="section-subtitle">Simples assim</span>
+      <h2 class="section-title">Configure em <span class="text-gradient">menos de 10 minutos</span></h2>
+      <p class="section-desc">
+        Você não precisa saber nada de tecnologia. Em poucos passos, sua IA já está atendendo seus clientes.
+      </p>
+    </div>
+
+    <div style="max-width: 640px; margin: 0 auto;">
+      <div class="steps-timeline">
+
+        <div class="timeline-item animate-fade-up delay-1">
+          <div class="timeline-num">🏢</div>
+          <div class="timeline-content">
+            <h3>Cadastre sua empresa</h3>
+            <p>Informe o nome, segmento, produtos e serviços. A IA vai aprender tudo sobre o seu negócio automaticamente.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item animate-fade-up delay-2">
+          <div class="timeline-num">🎭</div>
+          <div class="timeline-content">
+            <h3>Defina a personalidade da IA</h3>
+            <p>Escolha o nome, o tom de voz (formal, amigável, jovem) e como ela deve se apresentar para os seus clientes.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item animate-fade-up delay-3">
+          <div class="timeline-num">📱</div>
+          <div class="timeline-content">
+            <h3>Conecte suas redes sociais</h3>
+            <p>Vincule seu WhatsApp Business, Instagram ou Facebook. Nossa integração é segura e rápida.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item animate-fade-up delay-4">
+          <div class="timeline-num">🚀</div>
+          <div class="timeline-content">
+            <h3>Ative e pronto!</h3>
+            <p>Sua IA começa a atender imediatamente, respondendo com linguagem natural e o tom da sua marca — 24h por dia.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     RECURSOS
+═══════════════════════════════════════════════ -->
+<section class="section" id="recursos">
+  <div class="container">
+    <div class="section-header animate-fade-up">
+      <span class="section-subtitle">Tecnologia completa</span>
+      <h2 class="section-title">Tudo que sua empresa <span class="text-gradient">precisa</span></h2>
+      <p class="section-desc">
+        Uma plataforma completa de atendimento inteligente, humanizado e fácil de gerenciar.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feature-card animate-fade-up delay-1">
+        <div class="feature-icon purple">🧠</div>
+        <h3>IA com Personalidade Própria</h3>
+        <p>A IA tem um nome, um jeito de falar e um tom de voz único para a sua empresa. Nunca parece um robô genérico.</p>
+      </div>
+
+      <div class="feature-card animate-fade-up delay-2">
+        <div class="feature-icon cyan">💬</div>
+        <h3>Linguagem 100% Natural</h3>
+        <p>Responde com emojis contextuais, varia as frases e entende o contexto de cada conversa como um humano faria.</p>
+      </div>
+
+      <div class="feature-card animate-fade-up delay-3">
+        <div class="feature-icon green">⚡</div>
+        <h3>Resposta em Segundos</h3>
+        <p>Seus clientes nunca ficam esperando. A IA responde em até 3 segundos, a qualquer hora do dia ou da noite.</p>
+      </div>
+
+      <div class="feature-card animate-fade-up delay-1">
+        <div class="feature-icon orange">🎯</div>
+        <h3>Detecção de Intenção</h3>
+        <p>A IA identifica se o cliente quer comprar, tirar dúvidas ou reclamar, e adapta a resposta para cada situação.</p>
+      </div>
+
+      <div class="feature-card animate-fade-up delay-2">
+        <div class="feature-icon pink">🤝</div>
+        <h3>Transferência para Humano</h3>
+        <p>Quando necessário, a IA transfere a conversa para um atendente humano sem o cliente perceber a transição.</p>
+      </div>
+
+      <div class="feature-card animate-fade-up delay-3">
+        <div class="feature-icon blue">📊</div>
+        <h3>Relatórios em Tempo Real</h3>
+        <p>Acompanhe conversas, tempo de resposta, satisfação dos clientes e muito mais no seu painel de controle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     PLANOS
+═══════════════════════════════════════════════ -->
+<section class="section" id="planos" style="background: rgba(13,13,43,0.5);">
+  <div class="container">
+    <div class="section-header animate-fade-up">
+      <span class="section-subtitle">Planos e preços</span>
+      <h2 class="section-title">Comece <span class="text-gradient">gratuitamente</span></h2>
+      <p class="section-desc">Sem cartão de crédito. Cancele quando quiser. Upgrade a qualquer momento.</p>
+    </div>
+
+    <div class="grid-3" style="align-items: start; margin-top: 2rem;">
+
+      <!-- Grátis -->
+      <div class="pricing-card animate-fade-up delay-1">
+        <div class="pricing-name">Gratuito</div>
+        <div class="pricing-price">R$ 0</div>
+        <div class="pricing-period">para sempre</div>
+        <div class="pricing-features">
+          <div class="pricing-feature-item"><span class="check">✓</span> 1 empresa cadastrada</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> 300 mensagens/mês</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Simulador de conversa</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> 1 rede social</div>
+          <div class="pricing-feature-item" style="color: var(--text-muted)"><span>✕</span> Relatórios avançados</div>
+          <div class="pricing-feature-item" style="color: var(--text-muted)"><span>✕</span> Transferência para humano</div>
+        </div>
+        <a href="onboarding.html" class="btn btn-secondary w-full" id="btn-plano-gratis">Começar Grátis</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card popular animate-fade-up delay-2">
+        <div class="popular-badge">⭐ Mais Popular</div>
+        <div class="pricing-name">Profissional</div>
+        <div class="pricing-price text-gradient">R$ 97</div>
+        <div class="pricing-period">por mês</div>
+        <div class="pricing-features">
+          <div class="pricing-feature-item"><span class="check">✓</span> 5 empresas cadastradas</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Mensagens ilimitadas</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> WhatsApp + Instagram</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Transferência para humano</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Relatórios completos</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Suporte prioritário</div>
+        </div>
+        <a href="onboarding.html" class="btn btn-primary w-full" id="btn-plano-pro">Assinar Agora</a>
+      </div>
+
+      <!-- Agência -->
+      <div class="pricing-card animate-fade-up delay-3">
+        <div class="pricing-name">Agência</div>
+        <div class="pricing-price">R$ 297</div>
+        <div class="pricing-period">por mês</div>
+        <div class="pricing-features">
+          <div class="pricing-feature-item"><span class="check">✓</span> Empresas ilimitadas</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Mensagens ilimitadas</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Todas as redes sociais</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> API para integrações</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Painel white-label</div>
+          <div class="pricing-feature-item"><span class="check">✓</span> Gerente de conta dedicado</div>
+        </div>
+        <a href="onboarding.html" class="btn btn-accent w-full" id="btn-plano-agencia">Contratar</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     DEPOIMENTOS
+═══════════════════════════════════════════════ -->
+<section class="section" id="depoimentos">
+  <div class="container">
+    <div class="section-header animate-fade-up">
+      <span class="section-subtitle">O que dizem nossos clientes</span>
+      <h2 class="section-title">Empresas que já <span class="text-gradient">transformaram</span> o atendimento</h2>
+    </div>
+
+    <div class="grid-3">
+      <div class="testimonial-card animate-fade-up delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          "Minha clínica nunca perdeu mais um agendamento por falta de resposta. A IA é tão humana que os pacientes nem percebem que é automático."
+        </p>
+        <div class="testimonial-author">
+          <div class="avatar">D</div>
+          <div>
+            <div class="testimonial-name">Dra. Camila Souza</div>
+            <div class="testimonial-role">Clínica Estética · São Paulo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card animate-fade-up delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          "Aumentei minhas vendas em 40% no primeiro mês. Os clientes adoram a rapidez e o jeito carinhoso que a IA responde."
+        </p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background: linear-gradient(135deg,#06b6d4,#0891b2)">R</div>
+          <div>
+            <div class="testimonial-name">Rafael Mendes</div>
+            <div class="testimonial-role">Loja de Roupas · Rio de Janeiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card animate-fade-up delay-3">
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          "Como agência, ofereço esse serviço para 12 clientes. A plataforma é fácil de gerenciar e meus clientes ficam encantados."
+        </p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background: linear-gradient(135deg,#10b981,#059669)">J</div>
+          <div>
+            <div class="testimonial-name">Juliana Ferreira</div>
+            <div class="testimonial-role">Agência de Marketing Digital · BH</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     CTA FINAL
+═══════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="container" style="position:relative; z-index:1;">
+    <div class="animate-fade-up">
+      <div class="badge badge-primary" style="margin: 0 auto 1.5rem; display:table;">
+        🎁 Grátis para começar · Sem cartão de crédito
+      </div>
+      <h2 class="heading-lg" style="margin-bottom: 1rem;">
+        Pronto para ter uma IA que<br />
+        <span class="text-gradient">atende como você mesmo atenderia?</span>
+      </h2>
+      <p style="color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 1.05rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+        Configure em menos de 10 minutos e veja a diferença já no primeiro dia.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="onboarding.html" class="btn btn-primary btn-lg" id="btn-cta-final">
+          🚀 Criar Minha IA Agora — É Grátis
+        </a>
+        <a href="simulator.html" class="btn btn-secondary btn-lg" id="btn-cta-demo">
+          💬 Testar a IA Antes
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     RODAPÉ
+═══════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+      <a href="index.html" class="logo" style="font-size:1.1rem;">
+        <div class="logo-icon" style="width:30px;height:30px;font-size:14px;">🤖</div>
+        <span>HumanAI</span>
+      </a>
+      <div style="display:flex; gap:1.5rem;">
+        <a href="#">Política de Privacidade</a>
+        <a href="#">Termos de Uso</a>
+        <a href="#">Contato</a>
+      </div>
+    </div>
+    <p>© 2026 HumanAI · Atendimento com IA humanizada para empresas brasileiras · Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<script>
+  // Animação de scroll suave para as seções
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // Animação de entrada dos elementos ao fazer scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate-fade-up').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // Navbar com efeito ao rolar
+  window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+      navbar.style.background = 'rgba(7,7,26,0.95)';
+    } else {
+      navbar.style.background = 'rgba(7,7,26,0.8)';
+    }
+  });
+</script>
+
+</body>
+</html>

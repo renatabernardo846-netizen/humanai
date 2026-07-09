@@ -1,0 +1,7 @@
+# HumanAI — Git Ignore
+node_modules/
+backend/node_modules/
+backend/.env
+backend/dados.json
+.DS_Store
+*.log

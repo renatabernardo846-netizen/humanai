@@ -1,0 +1,27 @@
+# HumanAI — Configuração de Deploy no Render
+# Render.com hospeda gratuitamente Node.js
+
+services:
+  - type: web
+    name: humanai-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: humanai_verify_2026
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: INSTAGRAM_TOKEN
+        sync: false
+      - key: INSTAGRAM_VERIFY_TOKEN
+        value: humanai_ig_verify_2026
+      - key: API_SECRET_KEY
+        generateValue: true

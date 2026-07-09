@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HumanAI — Configure sua IA de atendimento humanizado em poucos passos." />
+  <title>Configurar Minha IA — HumanAI</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .onboarding-layout {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 6rem 1.5rem 4rem;
+    }
+
+    .onboarding-box {
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .step-panel {
+      display: none;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .step-panel.active {
+      display: block;
+    }
+
+    .panel-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* Tom de voz */
+    .tone-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 500px) {
+      .tone-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .tone-option {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      background: var(--bg-card);
+    }
+
+    .tone-option:hover {
+      border-color: var(--border-active);
+      background: var(--bg-card-hover);
+    }
+
+    .tone-option.selected {
+      border-color: var(--primary);
+      background: rgba(124,58,237,0.12);
+    }
+
+    .tone-emoji { font-size: 1.75rem; margin-bottom: 0.375rem; }
+    .tone-name  { font-size: 0.8rem; font-weight: 700; }
+    .tone-desc  { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Redes sociais */
+    .network-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      margin-top: 0.75rem;
+    }
+
+    .network-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+      transition: all 0.2s;
+    }
+
+    .network-item.connected {
+      border-color: var(--success);
+      background: rgba(16,185,129,0.06);
+    }
+
+    .network-info {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+    }
+
+    .network-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .network-name { font-weight: 700; font-size: 0.9rem; }
+    .network-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Prévia do chat */
+    .preview-chat {
+      background: rgba(13,13,43,0.8);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-top: 1.25rem;
+    }
+
+    .preview-header {
+      background: rgba(124,58,237,0.1);
+      border-bottom: 1px solid var(--border);
+      padding: 0.875rem 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .preview-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--grad-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .preview-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 140px;
+    }
+
+    .preview-msg {
+      padding: 0.6rem 0.875rem;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      max-width: 85%;
+    }
+
+    .preview-msg.ai {
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.18);
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+    }
+
+    /* Botões de navegação */
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Segmento */
+    .segment-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.625rem;
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 600px) {
+      .segment-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .segment-btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.625rem 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .segment-btn:hover {
+      border-color: var(--border-active);
+      color: var(--text-primary);
+    }
+
+    .segment-btn.selected {
+      border-color: var(--primary);
+      background: rgba(124,58,237,0.12);
+      color: var(--primary-light);
+    }
+
+    /* Horário */
+    .horario-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 0.75rem;
+    }
+
+    .dia-btn {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .dia-btn.selected {
+      border-color: var(--primary);
+      background: rgba(124,58,237,0.15);
+      color: var(--primary-light);
+    }
+
+    /* Sucesso */
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--success), #059669);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 0 40px var(--success-glow);
+      animation: scaleIn 0.5s ease;
+    }
+
+    .faq-item {
+      display: flex;
+      gap: 0.625rem;
+      align-items: flex-start;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-q {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .faq-a {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-animated"></div>
+
+<!-- Navbar simples -->
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🤖</div>
+      <span>HumanAI</span>
+    </a>
+    <a href="dashboard.html" class="btn btn-ghost btn-sm" id="btn-voltar-dashboard">← Voltar ao painel</a>
+  </div>
+</nav>
+
+<div class="onboarding-layout">
+  <div class="onboarding-box">
+
+    <!-- Título topo -->
+    <div style="text-align:center; margin-bottom:2.5rem;" class="animate-fade-up">
+      <div class="badge badge-primary" style="display:table; margin:0 auto 0.875rem;">
+        🚀 Configuração da IA
+      </div>
+      <h1 style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; margin-bottom:0.5rem;">
+        Configure sua <span class="text-gradient">IA de Atendimento</span>
+      </h1>
+      <p style="color:var(--text-secondary); font-size:0.9rem;">
+        Em menos de 10 minutos sua IA já estará atendendo seus clientes
+      </p>
+    </div>
+
+    <!-- Indicador de passos -->
+    <div class="steps animate-fade-up delay-1">
+      <div class="step-item">
+        <div class="step-circle active" id="circle-1">1</div>
+        <div class="step-line" id="line-1"></div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle" id="circle-2">2</div>
+        <div class="step-line" id="line-2"></div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle" id="circle-3">3</div>
+        <div class="step-line" id="line-3"></div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle" id="circle-4">4</div>
+        <div class="step-line" id="line-4"></div>
+      </div>
+      <div class="step-item">
+        <div class="step-circle" id="circle-5">5</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PASSO 1 — Dados da Empresa
+    ══════════════════════════════ -->
+    <div class="card step-panel active animate-fade-up delay-2" id="passo-1">
+      <div class="panel-title">🏢 Sobre sua empresa</div>
+      <p class="panel-subtitle">Essas informações serão usadas pela IA para responder com precisão sobre seu negócio.</p>
+
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Nome da empresa *</label>
+            <input type="text" class="input" id="empresa-nome" placeholder="Ex: Studio Bella Estética" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Seu nome *</label>
+            <input type="text" class="input" id="dono-nome" placeholder="Ex: Juliana Ferreira" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Segmento da empresa *</label>
+          <div class="segment-grid" id="segmento-grid">
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Estética')">💅 Estética</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Saúde')">🏥 Saúde</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Alimentação')">🍕 Alimentação</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Moda')">👗 Moda</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Educação')">📚 Educação</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Imóveis')">🏠 Imóveis</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Consultoria')">💼 Consultoria</button>
+            <button class="segment-btn" onclick="selecionarSegmento(this, 'Outro')">✨ Outro</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Descrição dos produtos/serviços *</label>
+          <textarea class="input textarea" id="empresa-descricao" placeholder="Ex: Somos um studio de estética especializado em unhas em gel, design de sobrancelhas e maquiagem para noivas. Atendemos de segunda a sábado, das 9h às 19h..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Cidade</label>
+            <input type="text" class="input" id="empresa-cidade" placeholder="Ex: São Paulo - SP" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">WhatsApp de contato</label>
+            <input type="text" class="input" id="empresa-whatsapp" placeholder="Ex: (11) 99999-9999" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="step-nav">
+        <div></div>
+        <button class="btn btn-primary" id="btn-p1-next" onclick="irParaPasso(2)">
+          Próximo → Personalidade da IA
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PASSO 2 — Personalidade da IA
+    ══════════════════════════════ -->
+    <div class="card step-panel" id="passo-2">
+      <div class="panel-title">🎭 Personalidade da sua IA</div>
+      <p class="panel-subtitle">Defina como sua IA vai se apresentar e conversar com seus clientes.</p>
+
+      <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Nome da IA *</label>
+            <input type="text" class="input" id="ia-nome" placeholder="Ex: Ana, Carol, Sofia..." oninput="atualizarPrevia()" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Emoji da IA</label>
+            <input type="text" class="input" id="ia-emoji" placeholder="Ex: 👩‍💼 💅 😊" value="👩‍💼" oninput="atualizarPrevia()" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Tom de voz da IA *</label>
+          <div class="tone-grid" id="tone-grid">
+            <div class="tone-option selected" onclick="selecionarTom(this, 'amigavel')" id="tom-amigavel">
+              <div class="tone-emoji">😊</div>
+              <div class="tone-name">Amigável</div>
+              <div class="tone-desc">Caloroso e próximo</div>
+            </div>
+            <div class="tone-option" onclick="selecionarTom(this, 'profissional')" id="tom-profissional">
+              <div class="tone-emoji">💼</div>
+              <div class="tone-name">Profissional</div>
+              <div class="tone-desc">Formal e confiante</div>
+            </div>
+            <div class="tone-option" onclick="selecionarTom(this, 'jovem')" id="tom-jovem">
+              <div class="tone-emoji">🔥</div>
+              <div class="tone-name">Jovem</div>
+              <div class="tone-desc">Descontraído e moderno</div>
+            </div>
+            <div class="tone-option" onclick="selecionarTom(this, 'gentil')" id="tom-gentil">
+              <div class="tone-emoji">🌸</div>
+              <div class="tone-name">Gentil</div>
+              <div class="tone-desc">Suave e acolhedor</div>
+            </div>
+            <div class="tone-option" onclick="selecionarTom(this, 'energetico')" id="tom-energetico">
+              <div class="tone-emoji">⚡</div>
+              <div class="tone-name">Enérgico</div>
+              <div class="tone-desc">Dinâmico e animado</div>
+            </div>
+            <div class="tone-option" onclick="selecionarTom(this, 'exclusivo')" id="tom-exclusivo">
+              <div class="tone-emoji">💎</div>
+              <div class="tone-name">Exclusivo</div>
+              <div class="tone-desc">Elegante e sofisticado</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Mensagem de boas-vindas</label>
+          <textarea class="input textarea" id="ia-boas-vindas" style="min-height:80px;" placeholder="Ex: Olá! Seja muito bem-vindo(a) ao Studio Bella! 😊 Sou a Ana e estou aqui para te ajudar. Como posso te atender hoje?"  oninput="atualizarPrevia()"></textarea>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label">Instruções especiais (opcional)</label>
+          <textarea class="input textarea" style="min-height:80px;" id="ia-instrucoes" placeholder="Ex: Sempre ofereça um desconto de 10% para novos clientes. Mencione nossas avaliações 5 estrelas. Nunca confirme preços sem consultar a tabela..."></textarea>
+        </div>
+
+        <!-- Prévia do chat -->
+        <div>
+          <label class="input-label">👁️ Prévia de como a IA vai aparecer</label>
+          <div class="preview-chat">
+            <div class="preview-header">
+              <div class="preview-avatar" id="previa-emoji">👩‍💼</div>
+              <div>
+                <div style="font-weight:700; font-size:0.85rem;" id="previa-nome">Ana · Assistente</div>
+                <div style="font-size:0.72rem; color:var(--success-light); display:flex; align-items:center; gap:4px;">
+                  <span class="status-dot active"></span> Online
+                </div>
+              </div>
+            </div>
+            <div class="preview-body">
+              <div class="preview-msg ai" id="previa-mensagem">
+                Olá! Seja muito bem-vindo(a)! 😊 Sou a Ana e estou aqui para te ajudar. Como posso te atender hoje?
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="irParaPasso(1)">← Voltar</button>
+        <button class="btn btn-primary" id="btn-p2-next" onclick="irParaPasso(3)">Próximo → Perguntas frequentes</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PASSO 3 — Perguntas Frequentes
+    ══════════════════════════════ -->
+    <div class="card step-panel" id="passo-3">
+      <div class="panel-title">❓ Perguntas Frequentes</div>
+      <p class="panel-subtitle">
+        Ensine sua IA a responder as perguntas que seus clientes fazem com mais frequência.
+        Quanto mais você ensinar, melhor ela vai atender!
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+        <!-- FAQs pré-definidas -->
+        <div style="display:flex; flex-direction:column; gap:0.75rem;" id="faq-lista">
+
+          <div class="card" style="padding:1rem; background:rgba(124,58,237,0.05);">
+            <div class="faq-item" style="border:none; padding:0; flex-direction:column; gap:0.5rem;">
+              <div class="input-group">
+                <label class="input-label">Pergunta 1</label>
+                <input type="text" class="input" id="faq-p1" placeholder="Ex: Qual o horário de atendimento?" value="Qual o horário de atendimento?" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Resposta</label>
+                <textarea class="input textarea" style="min-height:70px;" id="faq-r1" placeholder="Resposta...">Atendemos de segunda a sábado, das 9h às 19h. Aos domingos, somente com agendamento prévio 📅</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:1rem; background:rgba(124,58,237,0.05);">
+            <div class="faq-item" style="border:none; padding:0; flex-direction:column; gap:0.5rem;">
+              <div class="input-group">
+                <label class="input-label">Pergunta 2</label>
+                <input type="text" class="input" id="faq-p2" placeholder="Ex: Como faço para agendar?" value="Como faço para agendar?" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Resposta</label>
+                <textarea class="input textarea" style="min-height:70px;" id="faq-r2">É super simples! Me informe o serviço que deseja, seu nome e a data de preferência que verifico a disponibilidade para você 😊</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:1rem; background:rgba(124,58,237,0.05);">
+            <div class="faq-item" style="border:none; padding:0; flex-direction:column; gap:0.5rem;">
+              <div class="input-group">
+                <label class="input-label">Pergunta 3</label>
+                <input type="text" class="input" id="faq-p3" placeholder="Ex: Quais formas de pagamento?" value="Quais formas de pagamento?" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Resposta</label>
+                <textarea class="input textarea" style="min-height:70px;" id="faq-r3">Aceitamos Pix, cartão de crédito e débito. O pagamento é feito no dia do atendimento 💳✨</textarea>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="btn btn-secondary" id="btn-add-faq" onclick="adicionarFAQ()">
+          + Adicionar outra pergunta
+        </button>
+
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="irParaPasso(2)">← Voltar</button>
+        <button class="btn btn-primary" id="btn-p3-next" onclick="irParaPasso(4)">Próximo → Horário e disponibilidade</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PASSO 4 — Horário & Redes
+    ══════════════════════════════ -->
+    <div class="card step-panel" id="passo-4">
+      <div class="panel-title">📅 Horário e Redes Sociais</div>
+      <p class="panel-subtitle">Configure quando sua IA deve atender e em quais canais.</p>
+
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+        <!-- Dias da semana -->
+        <div class="input-group">
+          <label class="input-label">Dias de atendimento</label>
+          <div class="horario-grid" id="dias-grid">
+            <button class="dia-btn selected" onclick="toggleDia(this)">Seg</button>
+            <button class="dia-btn selected" onclick="toggleDia(this)">Ter</button>
+            <button class="dia-btn selected" onclick="toggleDia(this)">Qua</button>
+            <button class="dia-btn selected" onclick="toggleDia(this)">Qui</button>
+            <button class="dia-btn selected" onclick="toggleDia(this)">Sex</button>
+            <button class="dia-btn selected" onclick="toggleDia(this)">Sáb</button>
+            <button class="dia-btn" onclick="toggleDia(this)">Dom</button>
+          </div>
+        </div>
+
+        <!-- Horários -->
+        <div class="form-row">
+          <div class="input-group">
+            <label class="input-label">Horário de abertura</label>
+            <input type="time" class="input" id="horario-abertura" value="09:00" />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Horário de fechamento</label>
+            <input type="time" class="input" id="horario-fechamento" value="19:00" />
+          </div>
+        </div>
+
+        <!-- Fora do horário -->
+        <div class="input-group">
+          <label class="input-label">Mensagem fora do horário</label>
+          <textarea class="input textarea" style="min-height:80px;" id="msg-fora-horario">Olá! 😊 No momento estamos fechados, mas sua mensagem é muito importante para nós! Assim que abrirmos, responderei com toda atenção. Nosso horário é de segunda a sábado, das 9h às 19h 🌟</textarea>
+        </div>
+
+        <!-- Redes sociais -->
+        <div>
+          <label class="input-label" style="display:block; margin-bottom:0.75rem;">Conectar redes sociais</label>
+          <div class="network-grid">
+
+            <div class="network-item" id="net-whatsapp">
+              <div class="network-info">
+                <div class="network-icon" style="background:rgba(37,211,102,0.12);">📱</div>
+                <div>
+                  <div class="network-name">WhatsApp Business</div>
+                  <div class="network-hint">Requer conta Business verificada</div>
+                </div>
+              </div>
+              <button class="btn btn-success btn-sm" id="btn-conectar-wp" onclick="conectarRede('whatsapp')">Conectar</button>
+            </div>
+
+            <div class="network-item" id="net-instagram">
+              <div class="network-info">
+                <div class="network-icon" style="background:rgba(225,48,108,0.12);">📸</div>
+                <div>
+                  <div class="network-name">Instagram</div>
+                  <div class="network-hint">Responde DMs automaticamente</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-conectar-ig" onclick="conectarRede('instagram')">Conectar</button>
+            </div>
+
+            <div class="network-item" id="net-facebook">
+              <div class="network-info">
+                <div class="network-icon" style="background:rgba(24,119,242,0.12);">💬</div>
+                <div>
+                  <div class="network-name">Facebook Messenger</div>
+                  <div class="network-hint">Responde mensagens do Messenger</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-conectar-fb" onclick="conectarRede('facebook')">Conectar</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Chave da IA -->
+        <div class="card" style="background:rgba(6,182,212,0.05); border-color:rgba(6,182,212,0.2);">
+          <div style="font-weight:700; margin-bottom:0.625rem;">🔑 Chave de API do Google Gemini (Gratuito)</div>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.875rem;">
+            Necessária para ativar a inteligência artificial. Obtenha gratuitamente em
+            <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent-light); text-decoration:underline;">aistudio.google.com</a>
+          </p>
+          <div style="display:flex; gap:0.5rem;">
+            <input type="password" class="input" id="gemini-key" placeholder="AIza..." style="flex:1;" />
+            <button class="btn btn-accent btn-sm" id="btn-testar-key" onclick="testarChave()">Testar</button>
+          </div>
+          <div id="key-status" style="font-size:0.78rem; margin-top:0.5rem; color:var(--text-muted);">
+            Sem chave, a IA usará respostas inteligentes pré-configuradas.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="step-nav">
+        <button class="btn btn-secondary" onclick="irParaPasso(3)">← Voltar</button>
+        <button class="btn btn-primary btn-lg" id="btn-p4-next" onclick="irParaPasso(5)">🚀 Ativar minha IA!</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PASSO 5 — Sucesso!
+    ══════════════════════════════ -->
+    <div class="card step-panel" id="passo-5" style="text-align:center;">
+      <div class="success-icon">🎉</div>
+      <h2 style="font-size:1.75rem; font-weight:800; margin-bottom:0.75rem;">
+        Sua IA está <span class="text-gradient">pronta para atender!</span>
+      </h2>
+      <p style="color:var(--text-secondary); margin-bottom:2rem; font-size:0.95rem; max-width:480px; margin-left:auto; margin-right:auto; line-height:1.7;">
+        Parabéns! Sua IA humanizada já está configurada e pronta para atender seus clientes com naturalidade, empatia e o tom da sua marca — 24 horas por dia!
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:0.875rem; max-width:380px; margin:0 auto 2rem;">
+        <div style="display:flex; align-items:center; gap:0.875rem; padding:0.875rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px;">
+          <span style="font-size:1.25rem;">✅</span>
+          <span style="font-size:0.875rem; font-weight:600;">IA configurada com sucesso</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.875rem; padding:0.875rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px;">
+          <span style="font-size:1.25rem;">✅</span>
+          <span style="font-size:0.875rem; font-weight:600;">Personalidade definida</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.875rem; padding:0.875rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px;">
+          <span style="font-size:1.25rem;">✅</span>
+          <span style="font-size:0.875rem; font-weight:600;">Perguntas frequentes cadastradas</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.875rem; justify-content:center; flex-wrap:wrap;">
+        <a href="simulator.html" class="btn btn-primary btn-lg" id="btn-testar-ia-final">
+          🧪 Testar minha IA agora
+        </a>
+        <a href="dashboard.html" class="btn btn-secondary btn-lg" id="btn-ir-dashboard">
+          📊 Ir ao painel
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+  let passoAtual = 1;
+  let segmentoSelecionado = '';
+  let tomSelecionado = 'amigavel';
+
+  function irParaPasso(num) {
+    // Validação básica no passo 1
+    if (passoAtual === 1 && num > 1) {
+      const nome = document.getElementById('empresa-nome').value.trim();
+      const desc = document.getElementById('empresa-descricao').value.trim();
+      if (!nome || !desc) {
+        mostrarToast('Preencha o nome da empresa e a descrição!', 'error');
+        return;
+      }
+    }
+
+    // Validação básica no passo 2
+    if (passoAtual === 2 && num > 2) {
+      const iaNome = document.getElementById('ia-nome').value.trim();
+      if (!iaNome) {
+        mostrarToast('Defina um nome para sua IA!', 'error');
+        return;
+      }
+    }
+
+    // Esconder painel atual
+    document.getElementById('passo-' + passoAtual).classList.remove('active');
+
+    // Marcar passo atual como done
+    const circle = document.getElementById('circle-' + passoAtual);
+    circle.classList.remove('active');
+    circle.classList.add('done');
+    circle.textContent = '✓';
+
+    // Marcar linha como done (se não for o último)
+    if (passoAtual < 5) {
+      const linha = document.getElementById('line-' + passoAtual);
+      if (linha) linha.classList.add('done');
+    }
+
+    // Ativar novo passo
+    passoAtual = num;
+    document.getElementById('passo-' + num).classList.add('active');
+    document.getElementById('circle-' + num).classList.add('active');
+
+    // Scroll para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selecionarSegmento(btn, nome) {
+    document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    segmentoSelecionado = nome;
+  }
+
+  function selecionarTom(el, tom) {
+    document.querySelectorAll('.tone-option').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    tomSelecionado = tom;
+    atualizarPrevia();
+  }
+
+  function atualizarPrevia() {
+    const nome = document.getElementById('ia-nome').value || 'Ana';
+    const emoji = document.getElementById('ia-emoji').value || '👩‍💼';
+    const boasVindas = document.getElementById('ia-boas-vindas').value ||
+      `Olá! Seja muito bem-vindo(a)! 😊 Sou ${nome} e estou aqui para te ajudar. Como posso te atender hoje?`;
+
+    document.getElementById('previa-nome').textContent = `${nome} · Assistente`;
+    document.getElementById('previa-emoji').textContent = emoji;
+    document.getElementById('previa-mensagem').textContent = boasVindas;
+  }
+
+  function toggleDia(btn) {
+    btn.classList.toggle('selected');
+  }
+
+  function conectarRede(rede) {
+    const item = document.getElementById('net-' + rede);
+    const btn = document.getElementById('btn-conectar-' + (rede === 'whatsapp' ? 'wp' : rede === 'instagram' ? 'ig' : 'fb'));
+    item.classList.add('connected');
+    btn.textContent = '✅ Conectado';
+    btn.className = 'btn btn-success btn-sm';
+    btn.disabled = true;
+    mostrarToast(`${rede.charAt(0).toUpperCase() + rede.slice(1)} conectado com sucesso!`, 'success');
+  }
+
+  let faqCount = 3;
+  function adicionarFAQ() {
+    faqCount++;
+    const lista = document.getElementById('faq-lista');
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.cssText = 'padding:1rem; background:rgba(124,58,237,0.05);';
+    div.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        <div class="input-group">
+          <label class="input-label">Pergunta ${faqCount}</label>
+          <input type="text" class="input" placeholder="Ex: Vocês atendem em domicílio?" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Resposta</label>
+          <textarea class="input textarea" style="min-height:70px;" placeholder="Resposta para essa pergunta..."></textarea>
+        </div>
+      </div>
+    `;
+    lista.appendChild(div);
+  }
+
+  function testarChave() {
+    const key = document.getElementById('gemini-key').value.trim();
+    const status = document.getElementById('key-status');
+    if (!key) {
+      status.textContent = '⚠️ Digite a chave antes de testar.';
+      status.style.color = 'var(--warning-light)';
+      return;
+    }
+    status.textContent = '🔄 Testando conexão...';
+    status.style.color = 'var(--text-muted)';
+    setTimeout(() => {
+      if (key.startsWith('AIza') || key.length > 20) {
+        status.textContent = '✅ Chave válida! IA com Gemini ativada.';
+        status.style.color = 'var(--success-light)';
+      } else {
+        status.textContent = '❌ Chave inválida. Verifique e tente novamente.';
+        status.style.color = 'var(--danger-light)';
+      }
+    }, 1500);
+  }
+
+  function mostrarToast(msg, tipo = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    const icones = { success: '✅', info: 'ℹ️', error: '❌' };
+    toast.innerHTML = `<span>${icones[tipo] || 'ℹ️'}</span><span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  // Animações iniciais
+  document.querySelectorAll('.animate-fade-up').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 100 + i * 100);
+  });
+</script>
+
+</body>
+</html>
