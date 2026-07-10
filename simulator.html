@@ -375,7 +375,7 @@
       <button class="persona-btn active" id="persona-1" onclick="selecionarPersona(1)">
         <div class="persona-avatar" style="background:rgba(124,58,237,0.15);">💅</div>
         <div>
-          <div class="persona-name">Ana · Studio Bella</div>
+          <div class="persona-name">HumanAI · Agência</div>
           <div class="persona-tone">Tom: Amigável e acolhedor</div>
         </div>
       </button>
@@ -465,9 +465,9 @@
     <!-- Topo do chat -->
     <div class="chat-top">
       <div class="chat-top-info">
-        <div class="chat-top-avatar" id="chat-avatar">👩‍💼</div>
+        <div class="chat-top-avatar" id="chat-avatar">✨</div>
         <div>
-          <div style="font-weight:800; font-size:0.95rem;" id="chat-nome">Ana · Studio Bella</div>
+          <div style="font-weight:800; font-size:0.95rem;" id="chat-nome">HumanAI · Agência</div>
           <div style="font-size:0.75rem; display:flex; align-items:center; gap:5px; color:var(--success-light);">
             <span class="status-dot active"></span>
             <span id="chat-canal">WhatsApp · Online agora</span>
@@ -526,19 +526,19 @@
   // ──────────────────────────────────────────────────
   const personas = {
     1: {
-      nome: 'Ana · Studio Bella',
-      emoji: '👩‍💼',
+      nome: 'HumanAI · Agência',
+      emoji: '✨',
       tom: 'amigavel',
-      segmento: 'estética',
-      descricao: 'Studio de estética especializado em unhas em gel, design de sobrancelhas, maquiagem e cabelos.',
-      horario: 'segunda a sábado, das 9h às 19h',
+      segmento: 'tecnologia',
+      descricao: 'Agência de automação especializada em criar Inteligência Artificial humanizada para atender clientes 24h por dia no WhatsApp e Instagram.',
+      horario: 'Atendimento 24h por dia, 7 dias por semana',
       faq: {
-        'horário': 'Atendemos de segunda a sábado, das 9h às 19h. Aos domingos com agendamento especial 📅',
-        'agendamento': 'Para agendar é simples! Me informe o serviço desejado, seu nome e a data de preferência 😊',
-        'pagamento': 'Aceitamos Pix, cartão de crédito e débito 💳',
-        'preço': 'Nossos preços variam de R$35 a R$250 dependendo do serviço. Me diga o que deseja e passo o valor exato!',
-        'endereço': 'Estamos na Rua das Flores, 123 - Jardim América 📍 Mando o pin no mapa!',
-        'promoção': 'Temos promoção especial na segunda-feira: design + sobrancelha com 20% de desconto! ✨',
+        'horário': 'Nossa Inteligência Artificial atende os seus clientes 24 horas por dia, de segunda a segunda! ✨',
+        'agendamento': 'Para assinar nossa plataforma, acesse nosso site oficial e escolha entre o plano Professional (49/mês) ou Agency (199/mês). 😊',
+        'pagamento': 'Aceitamos Pix e Cartão de Crédito. Você tem 15 dias de teste grátis! 💳',
+        'preço': 'Temos o plano de 49 Dólares/Euros e o de 199. Ambos incluem a IA mais natural do mercado!',
+        'endereço': 'Somos uma agência 100% digital e atendemos empresas do mundo todo! 🌍',
+        'promoção': 'Nosso maior benefício atual é o teste grátis de 15 dias para você ver a IA respondendo seus clientes! ✨',
       }
     },
     2: {
@@ -919,7 +919,7 @@ Responda como ${p.nome}:`;
   // Mensagem de boas-vindas automática após 1s
   setTimeout(() => {
     adicionarMensagem(
-      'Olá! Seja muito bem-vindo(a) ao Studio Bella! 😊 Sou a Ana e estou aqui para te ajudar. Como posso te atender hoje?',
+      'Olá! Seja muito bem-vindo(a) à Agência HumanAI! ✨ Sou a sua assistente virtual. Como posso ajudar a automatizar sua empresa hoje?',
       'ai'
     );
     const dica = document.getElementById('dica-inicial');
