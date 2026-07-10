@@ -20,6 +20,7 @@ const dadosPadrao = {
       descricao: 'Studio de estética especializado em unhas em gel, design de sobrancelhas, maquiagem e cabelos. Atendemos com carinho e profissionalismo.',
       horario: 'Segunda a sábado, das 9h às 19h',
       cidade: 'São Paulo - SP',
+      idioma: 'pt-BR',
       tom: 'amigável, caloroso e próximo',
       ativa: true,
       whatsappNumero: '5511999999999',

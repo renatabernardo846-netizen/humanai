@@ -429,6 +429,14 @@
         </div>
 
         <div class="input-group">
+          <label class="input-label">Idioma da IA *</label>
+          <select class="input" id="ia-idioma" onchange="atualizarPrevia()">
+            <option value="pt-BR" selected>🇧🇷 Português Brasileiro</option>
+            <option value="en">🇺🇸 Inglês (English)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
           <label class="input-label">Tom de voz da IA *</label>
           <div class="tone-grid" id="tone-grid">
             <div class="tone-option selected" onclick="selecionarTom(this, 'amigavel')" id="tom-amigavel">
