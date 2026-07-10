@@ -12,6 +12,7 @@ const path = require('path');
 
 const whatsapp = require('./whatsapp');
 const instagram = require('./instagram');
+const email = require('./email');
 const motorIA = require('./ia');
 const banco = require('./banco');
 
@@ -52,8 +53,53 @@ app.get('/webhook/whatsapp', whatsapp.verificarWebhook);
 app.post('/webhook/whatsapp', whatsapp.processarMensagem);
 
 // ══════════════════════════════════════════════════════
-//   ROTAS — INSTAGRAM WEBHOOK
+//   ROTAS — FACEBOOK MESSENGER WEBHOOK
 // ══════════════════════════════════════════════════════
+app.get('/webhook/facebook', (req, res) => {
+  const modo  = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const desafio = req.query['hub.challenge'];
+  if (modo === 'subscribe' && token === process.env.INSTAGRAM_VERIFY_TOKEN) {
+    return res.status(200).send(desafio);
+  }
+  res.sendStatus(403);
+});
+
+app.post('/webhook/facebook', async (req, res) => {
+  res.sendStatus(200);
+  const corpo = req.body;
+  if (!corpo?.entry?.[0]?.messaging?.[0]) return;
+  const evento = corpo.entry[0].messaging[0];
+  const paginaId = corpo.entry[0].id;
+  if (evento.message?.is_echo || !evento.message?.text) return;
+
+  const textoCliente = evento.message.text;
+  const clienteId = evento.sender.id;
+  const empresa = await banco.buscarEmpresa(paginaId) || banco.listarEmpresas()[0];
+  if (!empresa?.ativa) return;
+
+  await new Promise(r => setTimeout(r, 1000 + Math.random() * 800));
+  const resposta = await motorIA.responder(textoCliente, clienteId, empresa, 'facebook');
+
+  const axios = require('axios');
+  await axios.post(`https://graph.facebook.com/v19.0/me/messages`, {
+    recipient: { id: clienteId },
+    message: { text: resposta }
+  }, { params: { access_token: process.env.INSTAGRAM_TOKEN } }).catch(() => {});
+
+  await banco.registrarMensagem({ empresaId: empresa.id, canal: 'facebook', clienteId, mensagemCliente: textoCliente, respostaIA: resposta, hora: new Date() });
+});
+
+// ══════════════════════════════════════════════════════
+//   ROTA — VERIFICAR E-MAILS (chamada a cada 2 minutos)
+// ══════════════════════════════════════════════════════
+setInterval(async () => {
+  const empresas = banco.listarEmpresas().filter(e => e.ativa && e.emailConfig?.ativa);
+  for (const empresa of empresas) {
+    await email.verificarEResponder(empresa).catch(() => {});
+  }
+}, 2 * 60 * 1000); // a cada 2 minutos
+
 app.get('/webhook/instagram', instagram.verificarWebhook);
 app.post('/webhook/instagram', instagram.processarMensagem);
 
@@ -176,11 +222,17 @@ app.post('/api/testar-ia', async (req, res) => {
 //   ROTA DE SAÚDE (health check)
 // ══════════════════════════════════════════════════════
 app.get('/api/saude', (req, res) => {
+  const modos = {
+    groq:    '🟢 Groq (Llama) — Gratuito ativo',
+    openai:  '🟢 OpenAI (ChatGPT) ativo',
+    gemini:  '🟢 Google Gemini ativo',
+    local:   '🟡 Modo local ativo'
+  };
   res.json({
     sucesso: true,
     status: '✅ HumanAI online',
     versao: '1.0.0',
-    ia: motorIA.modelo ? 'Google Gemini ativo' : 'Modo local ativo',
+    ia: modos[motorIA.modoAtivo] || 'Modo local ativo',
     empresas: banco.listarEmpresas().length,
     hora: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
   });
