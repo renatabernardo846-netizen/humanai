@@ -36,7 +36,7 @@ app.use('/api/', limitador);
 app.use(cors({
   origin: '*', // Em produção: defina o domínio do seu frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'Bypass-Tunnel-Reminder']
 }));
 
 // ── PARSE DO CORPO ─────────────────────────────────────
@@ -47,10 +47,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..')));
 
 // ══════════════════════════════════════════════════════
-//   ROTAS — WHATSAPP WEBHOOK
+//   ROTAS — WHATSAPP WEB
 // ══════════════════════════════════════════════════════
-app.get('/webhook/whatsapp', whatsapp.verificarWebhook);
-app.post('/webhook/whatsapp', whatsapp.processarMensagem);
+app.get('/api/clientes/qr-status', (req, res) => {
+  const { empresaId } = req.query;
+  if (!empresaId) return res.status(400).json({ erro: 'empresaId obrigatório' });
+  res.json(whatsapp.getStatus(empresaId));
+});
+
+app.post('/api/clientes/conectar', (req, res) => {
+  const { empresaId } = req.body;
+  if (!empresaId) return res.status(400).json({ erro: 'empresaId obrigatório' });
+  
+  whatsapp.iniciarWhatsApp(empresaId);
+  res.json({ sucesso: true, mensagem: 'Processo de conexão iniciado.' });
+});
 
 // ══════════════════════════════════════════════════════
 //   ROTAS — FACEBOOK MESSENGER WEBHOOK
@@ -243,7 +254,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-// ── INICIAR SERVIDOR ───────────────────────────────────
+// ── INICIAR SERVIDOR ─────────────────────────
+// NOTA: O WhatsApp não inicia mais globalmente aqui. 
+// Ele inicia por cliente, via POST /api/clientes/conectar
+
 app.listen(PORTA, () => {
   console.log('');
   console.log('╔═══════════════════════════════════════╗');

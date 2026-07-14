@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal do Cliente - HumanAI</title>
+  <link rel="stylesheet" href="style.css?v=10001">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .portal-container { width: 100%; max-width: 600px; padding: 20px; }
+    #qr-container { text-align: center; margin-top: var(--space-6); display: none; }
+    #qr-imagem { border-radius: 10px; margin: 0 auto; box-shadow: var(--shadow-primary); max-width: 280px; }
+    .loader { border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="bg-animated"></div>
+  
+  <div class="portal-container">
+    <div class="card card-glow text-center">
+      <div class="logo-icon mx-auto mb-4" style="margin: 0 auto 20px;">
+        <span>✦</span>
+      </div>
+      <h1 class="heading-md mb-2">Painel de Atendimento IA</h1>
+      <p class="text-muted mb-6">Conecte seu WhatsApp para que nossa Inteligência Artificial assuma seus atendimentos 24h por dia com total segurança.</p>
+      
+      <div id="status-panel" class="metric-card mt-6 text-center" style="background: rgba(0,0,0,0.2);">
+         <h3 id="status-titulo" class="heading-sm text-accent mb-2">Status: Desconectado</h3>
+         <p id="status-subtitulo" class="text-muted mb-4">Sua IA está pausada. Clique no botão abaixo para ligar.</p>
+         
+         <button id="btn-conectar" class="btn btn-primary btn-lg w-full" style="width: 100%;">
+            Conectar WhatsApp Seguramente
+         </button>
+         
+         <div id="loading-container" style="display: none; padding: 20px;">
+            <div class="loader"></div>
+            <p class="text-primary font-bold">Preparando ambiente seguro isolado...</p>
+            <p class="text-xs text-muted mt-2">Ativando travas anti-spam.</p>
+         </div>
+
+         <div id="qr-container">
+            <p class="text-primary font-bold mb-4">Escaneie o QR Code abaixo com seu WhatsApp Business:</p>
+            <img id="qr-imagem" src="" alt="QR Code">
+            <p class="text-xs text-muted mt-4">Abra o WhatsApp > Aparelhos Conectados > Conectar Aparelho</p>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Pegar o ID da empresa pela URL, padrão = 1 (Studio Bella / Cliente teste)
+    const urlParams = new URLSearchParams(window.location.search);
+    const empresaId = urlParams.get('empresaId') || 1;
+    let pollingInterval = null;
+
+    const btnConectar = document.getElementById('btn-conectar');
+    const loadingContainer = document.getElementById('loading-container');
+    const qrContainer = document.getElementById('qr-container');
+    const qrImagem = document.getElementById('qr-imagem');
+    const statusTitulo = document.getElementById('status-titulo');
+    const statusSubtitulo = document.getElementById('status-subtitulo');
+
+    btnConectar.addEventListener('click', async () => {
+      btnConectar.style.display = 'none';
+      loadingContainer.style.display = 'block';
+      statusTitulo.innerText = 'Iniciando Robô...';
+      statusSubtitulo.innerText = 'Carregando isolamento de segurança.';
+      
+      try {
+        await fetch('https://agenciahumanai.loca.lt/api/clientes/conectar', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true'
+          },
+          body: JSON.stringify({ empresaId })
+        });
+        
+        // Iniciar polling de status a cada 2 segundos
+        pollingInterval = setInterval(checkStatus, 2000);
+      } catch (err) {
+        alert('Erro ao conectar ao servidor. Tente novamente.');
+        btnConectar.style.display = 'inline-flex';
+        loadingContainer.style.display = 'none';
+      }
+    });
+
+    async function checkStatus() {
+      try {
+        const res = await fetch(`https://agenciahumanai.loca.lt/api/clientes/qr-status?empresaId=${empresaId}`, {
+          headers: { 'Bypass-Tunnel-Reminder': 'true' }
+        });
+        const data = await res.json();
+        
+        if (data.status === 'AGUARDANDO_QR' && data.qrUrl) {
+          loadingContainer.style.display = 'none';
+          qrContainer.style.display = 'block';
+          qrImagem.src = data.qrUrl;
+          statusTitulo.innerText = 'Aguardando Leitura';
+          statusTitulo.style.color = 'var(--warning-light)';
+          statusSubtitulo.innerText = 'Seu QR Code seguro foi gerado e está isolado para sua conta.';
+        }
+        
+        if (data.status === 'CONECTADO') {
+          clearInterval(pollingInterval);
+          loadingContainer.style.display = 'none';
+          qrContainer.style.display = 'none';
+          btnConectar.style.display = 'none';
+          statusTitulo.innerText = '✅ IA ONLINE E TRABALHANDO';
+          statusTitulo.style.color = 'var(--success-light)';
+          statusSubtitulo.innerText = 'Parabéns! Sua Inteligência Artificial está conectada e blindada pela Trava Anti-Spam.';
+        }
+        
+        if (data.status === 'DESCONECTADO') {
+           // Se o Whatsapp cair (ou a sessão for destruída), permite reconectar
+           clearInterval(pollingInterval);
+           loadingContainer.style.display = 'none';
+           qrContainer.style.display = 'none';
+           btnConectar.style.display = 'inline-flex';
+           statusTitulo.innerText = 'Status: Desconectado';
+           statusTitulo.style.color = 'var(--danger-light)';
+           statusSubtitulo.innerText = 'O robô foi desligado. Clique para reconectar.';
+        }
+      } catch(e) {
+          console.error("Erro no polling", e);
+      }
+    }
+    
+    // Fazer uma verificação inicial caso a página seja recarregada e ele já esteja conectado
+    checkStatus();
+  </script>
+</body>
+</html>

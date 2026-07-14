@@ -1,145 +1,128 @@
-/**
- * HumanAI — Integração WhatsApp Business Cloud API
- * Recebe e envia mensagens automaticamente via Meta
- */
-
-const axios = require('axios');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode');
 const motorIA = require('./ia');
 const banco = require('./banco');
 
-const WHATSAPP_API = 'https://graph.facebook.com/v19.0';
+// Map para guardar múltiplos clientes: empresaId => objeto { client, status, qrUrl }
+const clientesAtivos = new Map();
 
-/**
- * Verificação do webhook (exigida pela Meta)
- */
-function verificarWebhook(req, res) {
-  const modo = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const desafio = req.query['hub.challenge'];
-
-  if (modo === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-    console.log('✅ WhatsApp webhook verificado!');
-    return res.status(200).send(desafio);
-  }
-
-  console.error('❌ Falha na verificação do webhook WhatsApp');
-  return res.sendStatus(403);
-}
-
-/**
- * Processar mensagem recebida do WhatsApp
- */
-async function processarMensagem(req, res) {
-  try {
-    // Responder 200 imediatamente (Meta exige)
-    res.sendStatus(200);
-
-    const corpo = req.body;
-
-    // Verificar se é uma mensagem válida
-    if (!corpo?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) return;
-
-    const mensagemDados = corpo.entry[0].changes[0].value.messages[0];
-    const metaDados = corpo.entry[0].changes[0].value;
-
-    // Só processar mensagens de texto
-    if (mensagemDados.type !== 'text') {
-      await enviarMensagem(
-        mensagemDados.from,
-        'Recebi sua mensagem! 😊 No momento só consigo processar texto. Pode escrever sua dúvida?'
-      );
-      return;
+function iniciarWhatsApp(empresaId) {
+    // Garantir que empresaId seja inteiro
+    empresaId = parseInt(empresaId);
+    console.log(`🤖 Iniciando Cliente do WhatsApp Web para Empresa ${empresaId}...`);
+    
+    // Evitar iniciar duas vezes a mesma empresa
+    if (clientesAtivos.has(empresaId) && clientesAtivos.get(empresaId).status !== 'DESCONECTADO') {
+        return;
     }
 
-    const textoCliente = mensagemDados.text.body;
-    const telefoneCliente = mensagemDados.from;
-    const numeroEmpresa = metaDados.metadata.display_phone_number;
+    // Inicializa o estado
+    const estado = {
+        client: null,
+        status: 'INICIANDO', // INICIANDO, AGUARDANDO_QR, CONECTADO, DESCONECTADO
+        qrUrl: null
+    };
+    clientesAtivos.set(empresaId, estado);
+    
+    const client = new Client({
+        authStrategy: new LocalAuth({ clientId: `empresa_${empresaId}` }),
+        puppeteer: {
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        }
+    });
+    
+    estado.client = client;
 
-    console.log(`📱 WhatsApp | De: ${telefoneCliente} | Mensagem: "${textoCliente}"`);
+    // Tempo exato em que o robô desta empresa foi ligado (para a trava de segurança)
+    const startupTime = Math.floor(Date.now() / 1000);
 
-    // Buscar empresa pelo número de WhatsApp
-    const empresa = await banco.buscarEmpresaPorWhatsApp(numeroEmpresa);
-
-    if (!empresa || !empresa.ativa) {
-      console.log('⚠️  Empresa não encontrada ou inativa para o número:', numeroEmpresa);
-      return;
-    }
-
-    // Verificar horário de atendimento
-    const emHorario = banco.verificarHorario(empresa);
-    if (!emHorario && empresa.mensagemForaHorario) {
-      await enviarMensagem(telefoneCliente, empresa.mensagemForaHorario);
-      return;
-    }
-
-    // Marcar mensagem como lida
-    await marcarComoLida(mensagemDados.id);
-
-    // Mostrar "digitando..." por 1-2 segundos (mais humano)
-    await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-
-    // Gerar resposta com IA
-    const resposta = await motorIA.responder(textoCliente, telefoneCliente, empresa, 'whatsapp');
-
-    // Enviar resposta
-    await enviarMensagem(telefoneCliente, resposta);
-
-    // Registrar conversa no banco
-    await banco.registrarMensagem({
-      empresaId: empresa.id,
-      canal: 'whatsapp',
-      clienteId: telefoneCliente,
-      mensagemCliente: textoCliente,
-      respostaIA: resposta,
-      hora: new Date()
+    client.on('qr', async (qr) => {
+        console.log(`📱 [Empresa ${empresaId}] QR Code recebido! Gerando imagem...`);
+        estado.status = 'AGUARDANDO_QR';
+        try {
+            estado.qrUrl = await qrcode.toDataURL(qr);
+        } catch (err) {
+            console.error(`[Empresa ${empresaId}] Erro ao gerar QR Code:`, err);
+        }
     });
 
-    console.log(`✅ WhatsApp | Respondido: "${resposta.substring(0, 60)}..."`);
-
-  } catch (erro) {
-    console.error('❌ Erro no processamento WhatsApp:', erro.message);
-  }
-}
-
-/**
- * Enviar mensagem de texto pelo WhatsApp
- */
-async function enviarMensagem(para, texto) {
-  const url = `${WHATSAPP_API}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-
-  await axios.post(url, {
-    messaging_product: 'whatsapp',
-    recipient_type: 'individual',
-    to: para,
-    type: 'text',
-    text: { body: texto }
-  }, {
-    headers: {
-      'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-      'Content-Type': 'application/json'
-    }
-  });
-}
-
-/**
- * Marcar mensagem como lida (✓✓ azul)
- */
-async function marcarComoLida(mensagemId) {
-  try {
-    const url = `${WHATSAPP_API}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-    await axios.post(url, {
-      messaging_product: 'whatsapp',
-      status: 'read',
-      message_id: mensagemId
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
+    client.on('ready', () => {
+        console.log(`✅ [Empresa ${empresaId}] WhatsApp Conectado com Sucesso!`);
+        estado.status = 'CONECTADO';
+        estado.qrUrl = null; // Limpar QR após conectar
     });
-  } catch (e) {
-    // Não bloquear por erro de "lida"
-  }
+
+    client.on('disconnected', (reason) => {
+        console.log(`❌ [Empresa ${empresaId}] WhatsApp Desconectado:`, reason);
+        estado.status = 'DESCONECTADO';
+        
+        // Destruir a sessão e remover do Map para permitir reconexão limpa
+        client.destroy().catch(() => {});
+        clientesAtivos.delete(empresaId);
+    });
+
+    client.on('message', async msg => {
+        // Ignorar mensagens de grupos, status, canais/comunidades (@lid) e o próprio bot
+        if (msg.from === 'status@broadcast' || msg.isGroup || msg.from.includes('@g.us') || msg.from.includes('@lid')) return;
+
+        // TRAVA DE SEGURANÇA ANTI-SPAM (Isolada por Cliente)
+        if (msg.timestamp < startupTime) {
+            console.log(`[Empresa ${empresaId} | TRAVA ANTI-SPAM] Ignorando mensagem antiga de ${msg.from}`);
+            return;
+        }
+
+        const textoCliente = msg.body;
+        const telefoneCliente = msg.from.replace('@c.us', '');
+        
+        console.log(`📱 [Empresa ${empresaId}] WhatsApp | De: ${telefoneCliente} | Mensagem: "${textoCliente}"`);
+
+        // Simular "digitando..."
+        const chat = await msg.getChat();
+        await chat.sendStateTyping();
+        await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+
+        try {
+            let empresa = await banco.buscarEmpresa(empresaId); 
+            if (!empresa) {
+                console.error(`[Empresa ${empresaId}] Empresa não encontrada no banco de dados!`);
+                await chat.clearState();
+                return;
+            }
+
+            const resposta = await motorIA.responder(textoCliente, telefoneCliente, empresa, 'whatsapp');
+            
+            await chat.clearState();
+            await msg.reply(resposta);
+
+            await banco.registrarMensagem({
+              empresaId: empresa.id,
+              canal: 'whatsapp',
+              clienteId: telefoneCliente,
+              mensagemCliente: textoCliente,
+              respostaIA: resposta,
+              hora: new Date()
+            });
+
+            console.log(`✅ [Empresa ${empresaId}] Respondido: "${resposta.substring(0, 60)}..."`);
+        } catch (error) {
+            console.error(`❌ [Empresa ${empresaId}] Erro ao responder via IA:`, error);
+            await chat.clearState();
+        }
+    });
+
+    client.initialize();
 }
 
-module.exports = { verificarWebhook, processarMensagem };
+function getStatus(empresaId) {
+    empresaId = parseInt(empresaId);
+    if (!clientesAtivos.has(empresaId)) {
+        return { status: 'DESCONECTADO', qrUrl: null };
+    }
+    const estado = clientesAtivos.get(empresaId);
+    return {
+        status: estado.status,
+        qrUrl: estado.qrUrl
+    };
+}
+
+module.exports = { iniciarWhatsApp, getStatus };

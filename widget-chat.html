@@ -389,7 +389,7 @@
     nomeIA:    window.HUMANAI_NOME_IA    || 'Ana',
     emoji:     window.HUMANAI_EMOJI      || '👩‍💼',
     empresa:   window.HUMANAI_EMPRESA    || 'Studio Bella',
-    apiUrl:    window.HUMANAI_API_URL    || 'https://humanai-backend.onrender.com',
+    apiUrl:    window.HUMANAI_API_URL    || 'https://agenciahumanai.loca.lt',
     cor:       window.HUMANAI_COR        || '#7c3aed'
   };
 
@@ -492,7 +492,10 @@
     try {
       const res = await fetch(`${CONFIG.apiUrl}/api/testar-ia`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Bypass-Tunnel-Reminder': 'true'
+        },
         body: JSON.stringify({
           mensagem: texto,
           empresaId: CONFIG.empresaId,

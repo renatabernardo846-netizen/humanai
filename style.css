@@ -1134,17 +1134,34 @@ ul, ol {
   .nav-links {
     display: none;
   }
+  
+  .nav-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem !important;
+  }
+
+  .nav-actions .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
 
   .container {
     padding: 0 var(--space-4);
   }
 
   .section {
-    padding: var(--space-16) 0;
+    padding: var(--space-8) 0;
   }
 
   .heading-xl {
-    font-size: var(--text-4xl);
+    font-size: 2.2rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .hero-title {
+    font-size: 2rem !important;
+    line-height: 1.3 !important;
   }
 
   .main-content {
@@ -1232,4 +1249,15 @@ ul, ol {
 
 [data-tooltip]:hover::after {
   opacity: 1;
+}
+
+/* ─── CORREÇÕES DE LAYOUT GLOBAIS ───────────────────────── */
+.hero {
+  padding-top: 150px !important;
+}
+
+@media (max-width: 1300px) {
+  .nav-links {
+    display: none !important;
+  }
 }
