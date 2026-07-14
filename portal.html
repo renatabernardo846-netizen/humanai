@@ -67,7 +67,7 @@
       statusSubtitulo.innerText = 'Carregando isolamento de segurança.';
       
       try {
-        await fetch('https://agenciahumanai.loca.lt/api/clientes/conectar', {
+        await fetch('https://agencia-humanai-api.loca.lt/api/clientes/conectar', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -87,7 +87,7 @@
 
     async function checkStatus() {
       try {
-        const res = await fetch(`https://agenciahumanai.loca.lt/api/clientes/qr-status?empresaId=${empresaId}`, {
+        const res = await fetch(`https://agencia-humanai-api.loca.lt/api/clientes/qr-status?empresaId=${empresaId}`, {
           headers: { 'Bypass-Tunnel-Reminder': 'true' }
         });
         const data = await res.json();
