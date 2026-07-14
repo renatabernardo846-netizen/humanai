@@ -76,20 +76,25 @@ function iniciarWhatsApp(empresaId) {
         
         console.log(`📱 [Empresa ${empresaId}] WhatsApp | De: ${telefoneCliente} | Mensagem: "${textoCliente}"`);
 
-        // Simular "digitando..."
-        const chat = await msg.getChat();
-        await chat.sendStateTyping();
-        await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-
         try {
             let empresa = await banco.buscarEmpresa(empresaId); 
             if (!empresa) {
                 console.error(`[Empresa ${empresaId}] Empresa não encontrada no banco de dados!`);
-                await chat.clearState();
                 return;
             }
 
             const resposta = await motorIA.responder(textoCliente, telefoneCliente, empresa, 'whatsapp');
+            
+            // DELAY DINÂMICO ANTI-BAN (Calcula o tempo baseado no tamanho do texto, como um humano faria)
+            const chat = await msg.getChat();
+            await chat.sendStateTyping();
+            
+            // Cerca de 30ms por caractere (com limite mínimo de 1.5s e máximo de 7s)
+            let tempoDigitando = resposta.length * 30; 
+            if (tempoDigitando < 1500) tempoDigitando = 1500;
+            if (tempoDigitando > 7000) tempoDigitando = 7000;
+            
+            await new Promise(r => setTimeout(r, tempoDigitando));
             
             await chat.clearState();
             await msg.reply(resposta);
